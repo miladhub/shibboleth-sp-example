@@ -10,8 +10,8 @@ The app-specific configuration is contained in file `ssl.conf`:
         ShibRequestSetting requireSession 1
         require shib-session
         ShibUseHeaders On
-        ProxyPass http://host.docker.internal:9176/
-        ProxyPassReverse http://host.docker.internal:9176/
+        ProxyPass http://host.docker.internal:9176
+        ProxyPassReverse http://host.docker.internal:9176
         ShibRequestSetting exportAssertion true
     </Location>
 
