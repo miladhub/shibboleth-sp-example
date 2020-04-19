@@ -16,7 +16,9 @@ The app-specific configuration is contained in file `ssl.conf`:
     </Location>
 
 The sample app will be available at <https://localhost/helk>.
+
 Shibboleth session information: <https://localhost/Shibboleth.sso/Session>.
+
 Shibboleth status: <https://localhost/Shibboleth.sso/Status>.
 
 # Installing the SAML IdP
