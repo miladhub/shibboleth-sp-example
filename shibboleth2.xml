@@ -28,7 +28,7 @@
         -->
         <Sessions lifetime="28800" timeout="3600" relayState="ss:mem"
                   checkAddress="false" handlerSSL="true" cookieProps="https"
-                  exportLocation="https://localhost/Shibboleth.sso/GetAssertion" exportACL="host.docker.internal ::1">
+                  exportLocation="https://localhost/Shibboleth.sso/GetAssertion" exportACL="172.17.0.1 ::1">
 
             <!--
             Configures SSO for a default IdP. To properly allow for >1 IdP, remove
@@ -49,7 +49,7 @@
             <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
 
             <!-- Status reporting service. -->
-            <Handler type="Status" Location="/Status" acl="127.0.0.1 ::1"/>
+            <Handler type="Status" Location="/Status" acl="172.17.0.1"/>
 
             <!-- Session diagnostic service. -->
             <Handler type="Session" Location="/Session" showAttributeValues="true"/>
