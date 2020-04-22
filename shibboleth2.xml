@@ -35,7 +35,7 @@
             entityID property and adjust discoveryURL to point to discovery service.
             You can also override entityID on /Login query string, or in RequestMap/htaccess.
             -->
-            <SSO entityID="http://localhost:8080/simplesaml/saml2/idp/metadata.php">
+            <SSO entityID="http://localhost:28080/simplesaml/saml2/idp/metadata.php">
               SAML2
             </SSO>
 
@@ -49,7 +49,7 @@
             <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
 
             <!-- Status reporting service. -->
-            <Handler type="Status" Location="/Status" acl="172.17.0.1"/>
+            <Handler type="Status" Location="/Status" acl="127.0.0.1 172.17.0.1"/>
 
             <!-- Session diagnostic service. -->
             <Handler type="Session" Location="/Session" showAttributeValues="true"/>
