@@ -3,8 +3,7 @@ Shibboleth SAML Service Provider (SP) example
 
 This project installs a testing SAML Identity Provider (IdP) and a Shibboleth Service Provider (SP) using Docker.
 
-The app behind the SP is just a demo server that dumps all HTTP headers on the console.
-The app-specific configuration is contained in file `ssl.conf`:
+These instructions were tested on MacOS. The app behind the SP is just a demo server that dumps all HTTP headers on the console. The app-specific configuration is contained in file `ssl.conf`:
 
     <Location /app>
         AuthType shibboleth
@@ -46,7 +45,7 @@ To check the SP status, issue the following command:
 
 # Installing the dummy app
 
-    netcat -lp 9176
+    nc -l 9176
     
 If you navigate to the app at <https://localhost/app> the page will stay there hanging, but on the console
 you can see all SAML headers coming through, which means that SAML is working:
