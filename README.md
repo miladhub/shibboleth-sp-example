@@ -47,8 +47,7 @@ To check the SP status, issue the following command:
 
     nc -l 9176
     
-If you navigate to the app at <https://localhost/app> the page will stay there hanging, but on the console
-you can see all SAML headers coming through, which means that SAML is working:
+If you navigate to the app at <https://localhost/app>, the IdP will first prompt for credentials - just enter `user1` / `user1pass`; after that, the page will stay there hanging, but on the console you can see all SAML headers coming through, which means that SAML is working:
 
     GET / HTTP/1.1
     Host: host.docker.internal:9176
