@@ -27,15 +27,14 @@
         "false", this makes an assertion stolen in transit easier for attackers to misuse.
         -->
         <Sessions lifetime="28800" timeout="3600" relayState="ss:mem"
-                  checkAddress="false" handlerSSL="true" cookieProps="https"
-                  exportLocation="https://localhost/Shibboleth.sso/GetAssertion" exportACL="172.17.0.1 ::1">
+                  checkAddress="false" handlerSSL="true" cookieProps="https">
 
             <!--
             Configures SSO for a default IdP. To properly allow for >1 IdP, remove
             entityID property and adjust discoveryURL to point to discovery service.
             You can also override entityID on /Login query string, or in RequestMap/htaccess.
             -->
-            <SSO entityID="http://localhost:28080/simplesaml/saml2/idp/metadata.php">
+            <SSO entityID="http://docker.local:28080/simplesaml/saml2/idp/metadata.php">
               SAML2
             </SSO>
 

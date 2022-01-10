@@ -23,21 +23,27 @@ You can replace it by pointing at your app.
         -p 28080:8080 \
         -p 28443:8443 \
         -e SIMPLESAMLPHP_SP_ENTITY_ID=https://sp.example.org/shibboleth \
-        -e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=https://localhost/Shibboleth.sso/SAML2/POST \
-        -e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=https://localhost/Shibboleth.sso/Logout \
+        -e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=https://docker.local/Shibboleth.sso/SAML2/POST \
+        -e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=https://docker.local/Shibboleth.sso/Logout \
         -d kristophjunge/test-saml-idp
 
-The IdP is available at <http://localhost:8080/simplesaml>.
+The IdP is available at <http://docker.local:28080/simplesaml>.
 
 # Installing the Shibboleth SP
 
+    # Workaround for https://github.com/kubernetes/minikube/issues/8439
+    MYIP=`minikube ssh grep host.minikube.internal /etc/hosts | cut -f1`
+    cp ssl.conf my.ssl.conf
+    sed -i '' "s/host\.docker\.internal/$MYIP/g" my.ssl.conf
+
     docker run -dit --name shib-sp -p 80:80 -p 443:443 unicon/shibboleth-sp:3.0.4
-    curl http://localhost:28080/simplesaml/saml2/idp/metadata.php -o idp-metadata.xml
+    curl http://docker.local:28080/simplesaml/saml2/idp/metadata.php -o idp-metadata.xml
     docker cp idp-metadata.xml shib-sp:/etc/shibboleth/
     docker cp shibboleth2.xml shib-sp:/etc/shibboleth/
     docker cp attribute-map.xml shib-sp:/etc/shibboleth/
-    docker cp ssl.conf shib-sp:/etc/httpd/conf.d/
+    docker cp my.ssl.conf shib-sp:/etc/httpd/conf.d/ssl.conf
     docker restart shib-sp
+    rm my.ssl.conf
 
 To check the SP status, issue the following command:
 
@@ -47,34 +53,37 @@ To check the SP status, issue the following command:
 
     nc -l 9176
     
-If you navigate to the app at <https://localhost/app> the page will stay there hanging, but on the console
-you can see all SAML headers coming through, which means that SAML is working:
+If you navigate to the app at <https://docker.local/app>, the IdP will first prompt for credentials - just enter `user1` / `user1pass`; after that, the page will stay there hanging, but on the console you can see all SAML headers coming through, which means that SAML is working:
 
     GET / HTTP/1.1
-    Host: host.docker.internal:9176
+    Host: 192.168.64.1:9176
     Cache-Control: max-age=0
+    sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="97", "Chromium";v="97"
+    sec-ch-ua-mobile: ?0
+    sec-ch-ua-platform: "macOS"
     Upgrade-Insecure-Requests: 1
-    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36
-    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
     Sec-Fetch-Site: cross-site
     Sec-Fetch-Mode: navigate
+    Sec-Fetch-User: ?1
     Sec-Fetch-Dest: document
-    Referer: http://localhost:28080/simplesaml/saml2/idp/SSOService.php?SAMLRequest=fVK7TsMwFP2VyHtj1w0lsZpKoR2oxKMihYEFOcmlseTYxtfh8fc0TUFlYfHi89ZdoOy0E0UfWvMAbz1giD47bVAcP3LSeyOsRIXCyA5QhFqUxe2N4DETzttga6tJVCCCD8qalTXYd%2BBL8O%2BqhseHm5y0ITgUlGpbS91aDLRsVVVZDaGNES0dBDnd3pc7Eq0PCZSRg9bIPCcKnrKUUVSd0zAEpMPDqWocLcv7k2nsWkeizTonLzLNUmCz6WuSgaxYxS5lkqQNv8jmkDRZcoAh9rAxGKQJOeGMswlLJpzvppngc5HMnkm0PfW8UqZRZv%2F%2FKNUIQnG9220nY6kn8HgsdACQ5WIILY7G%2Fmzs%2F2Xlz8Jk%2BbMnuhg%2B5TBFbP2e4u%2BoC3rmMNo5cXeQ3Ky3Vqv6Kyq0th8rDzJATqaELkfK30NYfgM%3D&RelayState=ss%3Amem%3A89b56d3926131e1df7fbff133de0639e8d27cfe04f76905709ce03dfb28699de
+    Referer: http://docker.local:28080/
     Accept-Encoding: gzip, deflate, br
-    Accept-Language: en-US,en;q=0.9,it;q=0.8,pl;q=0.7
-    Cookie: PHPSESSIDIDP=2480f68fbde75255a8e9aa131acaea5f; SimpleSAMLAuthTokenIdp=_facbf4cf27abba77af57d947bbc45b2c9ff185bbac; _shibsession_64656661756c7468747470733a2f2f73702e6578616d706c652e6f72672f73686962626f6c657468=_102bdf3b015a9470794e647ec986e22e
+    Accept-Language: en-US,en;q=0.9
+    Cookie: PHPSESSIDIDP=ba1023a832e4bb3677ddcf5b4ee9a589; SimpleSAMLAuthTokenIdp=_6958c3b06681672f22c03903af4b381cd9fcf01436; _shibsession_64656661756c7468747470733a2f2f73702e6578616d706c652e6f72672f73686962626f6c657468=_c77ea9fcd41b57f5c238e47da520cafe
     Shib-Cookie-Name: 
-    Shib-Session-ID: _102bdf3b015a9470794e647ec986e22e
-    Shib-Session-Index: _9ed042750b79e0843a989bbb56e31c352923e4d7f8
-    Shib-Session-Expires: 1587611869
-    Shib-Session-Inactivity: 1587587203
-    Shib-Identity-Provider: http://localhost:28080/simplesaml/saml2/idp/metadata.php
+    Shib-Session-ID: _c77ea9fcd41b57f5c238e47da520cafe
+    Shib-Session-Index: _233c95bc7ea13c40d4f19fdc99fddadb4123f09bd2
+    Shib-Session-Expires: 1641848926
+    Shib-Session-Inactivity: 1641824175
+    Shib-Identity-Provider: http://docker.local:28080/simplesaml/saml2/idp/metadata.php
     Shib-Authentication-Method: urn:oasis:names:tc:SAML:2.0:ac:classes:Password
-    Shib-Authentication-Instant: 2020-04-22T19:14:49Z
+    Shib-Authentication-Instant: 2022-01-10T13:08:46Z
     Shib-AuthnContext-Class: urn:oasis:names:tc:SAML:2.0:ac:classes:Password
     Shib-AuthnContext-Decl: 
-    Shib-Assertion-Count: 01
-    Shib-Handler: https://localhost/Shibboleth.sso
+    Shib-Assertion-Count: 
+    Shib-Handler: https://docker.local/Shibboleth.sso
     subject-id: 
     pairwise-id: 
     eppn: 
@@ -86,10 +95,9 @@ you can see all SAML headers coming through, which means that SAML is working:
     email: user1@example.com
     Shib-Application-ID: default
     REMOTE_USER: 
-    Shib-Assertion-01: https://localhost/Shibboleth.sso/GetAssertion?key=_102bdf3b015a9470794e647ec986e22e&ID=_23242d09d4b2cdc9c5e37fd32d2ed80e317cf657f7
-    X-Forwarded-For: 172.17.0.1
-    X-Forwarded-Host: localhost
-    X-Forwarded-Server: 172.17.0.3
+    X-Forwarded-For: 192.168.64.1
+    X-Forwarded-Host: docker.local
+    X-Forwarded-Server: 172.17.0.4
     Connection: Keep-Alive
 
 More Shibboleth info can be found at <https://localhost/Shibboleth.sso/Session> and <https://localhost/Shibboleth.sso/Status>.
